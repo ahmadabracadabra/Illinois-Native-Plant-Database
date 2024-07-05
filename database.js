@@ -31,5 +31,20 @@ export async function createPlant(Scientific_name, Common_name, Type, Height, Wi
         return getPlant(id) 
 }
 
+export async function deletePlant(id) {
+    const [result] = await pool.query(`
+        DELETE FROM Native_Plant_List 
+        WHERE id = ?
+    `, [id]);
+    return result.affectedRows > 0;
+}
 
 
+export async function updatePlant(id, Scientific_name, Common_name, Type, Height, Width, Spacing, Bloom_color, Light_intensity, Bloom_start, Bloom_end, Hardiness_zone, Soil_moisture) {
+    const [result] = await pool.query(`
+        UPDATE Native_Plant_List 
+        SET Scientific_name = ?, Common_name = ?, Type = ?, Height = ?, Width = ?, Spacing = ?, Bloom_color = ?, Light_intensity = ?, Bloom_start = ?, Bloom_end = ?, Hardiness_zone = ?, Soil_moisture = ?
+        WHERE id = ?
+    `, [Scientific_name, Common_name, Type, Height, Width, Spacing, Bloom_color, Light_intensity, Bloom_start, Bloom_end, Hardiness_zone, Soil_moisture, id]);
+    return result.affectedRows > 0 ? getPlant(id) : null;
+}

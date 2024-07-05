@@ -1,6 +1,6 @@
 import express from 'express'
 
-import { getPlant, getPlants, createPlant } from './database.js'
+import { getPlant, getPlants, createPlant, deletePlant, updatePlant } from './database.js'
 
 const app = express()
 
@@ -24,6 +24,34 @@ app.post("/Native_Plant_List", async (req,res) => {
             Bloom_end, Hardiness_zone, Soil_moisture)
     res.status(201).send(plant)
 })
+
+
+app.delete("/Native_Plant_List/:id", async (req, res) => {
+    const id = req.params.id;
+    const success = await deletePlant(id);
+    if (success) {
+        res.send({ message: 'Plant deleted successfully' });
+    } else {
+        res.status(404).send({ error: 'Plant not found' });
+    }
+});
+
+
+app.put("/Native_Plant_List/:id", async (req, res) => {
+    const id = req.params.id;
+    const { Scientific_name, Common_name, Type, Height, Width, Spacing, Bloom_color, Light_intensity, Bloom_start, 
+        Bloom_end, Hardiness_zone, Soil_moisture } = req.body;
+    const plant = await updatePlant(id, Scientific_name, Common_name, Type, Height, Width, Spacing, Bloom_color, Light_intensity, Bloom_start, 
+        Bloom_end, Hardiness_zone, Soil_moisture);
+    if (plant) {
+        res.send(plant);
+    } else {
+        res.status(404).send({ error: 'Plant not found' });
+    }
+});
+
+
+
 
 app.use((err, req, res, next) => {
     console.error(err.stack)
