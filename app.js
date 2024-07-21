@@ -1,30 +1,46 @@
-import express from 'express'
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { getPlant, getPlants, createPlant, deletePlant, updatePlant } from './database.js';
 
-import { getPlant, getPlants, createPlant, deletePlant, updatePlant } from './database.js'
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const app = express()
+const app = express();
 
-app.use(express.json())
+app.use(cors({
+    origin: 'http://127.0.0.1:5500',
+    methods: ["GET"],
+    allowedHeaders: ['Content-Type'],
+}));
 
-app.get("/Native_Plant_List", async (req,res) => {
-    const plants = await getPlants()
-    res.send(plants)
-})
+app.use(express.static(path.join(__dirname, 'public')));
 
-app.get("/Native_Plant_List/:id", async (req,res) => {
-    const id = req.params.id
-    const plant = await getPlant(id)
-    res.send(plant)
-})
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'home.html'));
+});
 
-app.post("/Native_Plant_List", async (req,res) => {
-    const {Scientific_name, Common_name, Type, Height, Width, Spacing, Bloom_color, Light_intensity, Bloom_start, 
-        Bloom_end, Hardiness_zone, Soil_moisture} = req.body
-        const plant = await createPlant(Scientific_name, Common_name, Type, Height, Width, Spacing, Bloom_color, Light_intensity, Bloom_start, 
-            Bloom_end, Hardiness_zone, Soil_moisture)
-    res.status(201).send(plant)
-})
+app.use(express.json());
 
+app.get("/Native_Plant_List", async (req, res) => {
+    const plants = await getPlants();
+    res.send(plants);
+});
+
+app.get("/Native_Plant_List/:id", async (req, res) => {
+    const id = req.params.id;
+    const plant = await getPlant(id);
+    res.send(plant);
+});
+
+app.post("/Native_Plant_List", async (req, res) => {
+    const { Scientific_name, Common_name, Type, Height, Width, Spacing, Bloom_color, Light_intensity, Bloom_start, 
+        Bloom_end, Hardiness_zone, Soil_moisture } = req.body;
+    const plant = await createPlant(Scientific_name, Common_name, Type, Height, Width, Spacing, Bloom_color, Light_intensity, Bloom_start, 
+        Bloom_end, Hardiness_zone, Soil_moisture);
+    res.status(201).send(plant);
+});
 
 app.delete("/Native_Plant_List/:id", async (req, res) => {
     const id = req.params.id;
@@ -35,7 +51,6 @@ app.delete("/Native_Plant_List/:id", async (req, res) => {
         res.status(404).send({ error: 'Plant not found' });
     }
 });
-
 
 app.put("/Native_Plant_List/:id", async (req, res) => {
     const id = req.params.id;
@@ -50,14 +65,12 @@ app.put("/Native_Plant_List/:id", async (req, res) => {
     }
 });
 
-
-
-
 app.use((err, req, res, next) => {
-    console.error(err.stack)
-    res.status(500).send('Something broke!')
-  })
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+});
 
-  app.listen(8080,() => {
-    console.log('Server is running on port 8080')
-  })
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
